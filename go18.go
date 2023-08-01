@@ -12,6 +12,8 @@ import (
 // End sets the time when reading response is done.
 // This must be called after reading response body.
 func (r *Result) End(t time.Time) {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
 	r.transferDone = t
 
 	// This means result is empty (it does nothing).
