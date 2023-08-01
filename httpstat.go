@@ -14,7 +14,7 @@ import (
 
 // Result stores httpstat info.
 type Result struct {
-	mutex sync.Mutex
+	mutex sync.RWMutex
 
 	// The following are duration for each phase
 	DNSLookup        time.Duration
@@ -55,6 +55,7 @@ type Result struct {
 	isReused bool
 }
 
+// durations must be called while a read lock is held.
 func (r *Result) durations() map[string]time.Duration {
 	return map[string]time.Duration{
 		"DNSLookup":        r.DNSLookup,
@@ -73,6 +74,8 @@ func (r *Result) durations() map[string]time.Duration {
 
 // Format formats stats result.
 func (r Result) Format(s fmt.State, verb rune) {
+	r.mutex.RLock()
+	defer r.mutex.RUnlock()
 	switch verb {
 	case 'v':
 		if s.Flag('+') {
